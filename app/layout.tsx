@@ -21,7 +21,13 @@ export default function RootLayout({
           href="https://cdn-icons-png.flaticon.com/128/2579/2579243.png"
         />
       </head>
-      <body className={`${rubik.className} antialiased`}>{children}</body>
+      <body className={`${rubik.className} antialiased`}>
+        {children}
+        <script
+          src="https://kit.fontawesome.com/1322ec7b78.js"
+          crossOrigin="anonymous"
+        ></script>
+      </body>
     </html>
   );
 }

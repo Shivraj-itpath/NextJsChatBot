@@ -2,35 +2,35 @@
 
 import type React from "react";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Message } from "./message";
-import type { Conversation, ImageFile } from "@/app/page";
+import type { Conversation } from "@/app/page";
 import { Send, Plus } from "lucide-react";
 import { Comment } from "react-loader-spinner";
-import CustomLoader from "./ui/customLoader";
+import Image from "next/image";
 
 interface ChatAreaProps {
   conversation: Conversation;
-  fileRef: React.RefObject<HTMLInputElement>;
   handleFileClick: () => void;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  selectedFile: ImageFile | null;
   input: string;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isLoading: boolean;
+  selectedFile: File | null;
+  setSelectedFile: React.Dispatch<React.SetStateAction<File | null>>;
 }
 
 export function ChatArea({
   conversation,
-  fileRef,
   handleFileClick,
   handleFileChange,
-  selectedFile,
   input,
   handleInputChange,
   handleSubmit,
   isLoading,
+  selectedFile,
+  setSelectedFile,
 }: ChatAreaProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -49,11 +49,7 @@ export function ChatArea({
             </div>
           ) : (
             conversation?.messages?.map((message) => (
-              <Message
-                key={message.id}
-                message={message}
-                imagefile={selectedFile?.imagePreview}
-              />
+              <Message key={message.id} message={message} />
             ))
           )}
           <div ref={messagesEndRef} />
@@ -75,43 +71,62 @@ export function ChatArea({
       </div>
 
       <div className="p-4 border-t border-gray-400 bg-white mt-4">
-        <form onSubmit={handleSubmit} className="max-w-3xl mx-auto flex gap-2">
+        <div className="max-w-3xl mx-auto">
           {selectedFile && (
-            <div className="mt-2 text-sm text-gray-600">
-              Selected file: {selectedFile.file.name}
+            <div className="flex items-start mb-2">
+              <Image
+                src={URL.createObjectURL(selectedFile)}
+                alt="file"
+                width={100}
+                height={100}
+                className="inline-block p-1 border border-gray-400 rounded-md"
+              />
+              <div>
+                <span
+                  className="w-4 cursor-pointer rounded-full px-1 hover:bg-gray-200 transition-colors"
+                  onClick={() => {
+                    setSelectedFile(null);
+                  }}
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </span>
+              </div>
+              {/* Selected file: {selectedFile.name} */}
             </div>
           )}
-          <input
-            type="text"
-            value={input}
-            onChange={handleInputChange}
-            placeholder="Type your message..."
-            className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007BFF] focus:border-transparent"
-          />
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={handleInputChange}
+              placeholder="Type your message..."
+              className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007BFF] focus:border-transparent"
+            />
 
-          <label
-            className="p-2 bg-[#007BFF] text-white rounded-md hover:bg-[#0069d9] transition-colors cursor-pointer d-flex items-center justify-center"
-            onClick={handleFileClick}
-            htmlFor="file_input"
-          >
-            <Plus className="h-5 w-5" />
-          </label>
-          <input
-            className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 hidden"
-            id="file_input"
-            type="file"
-            // ref={fileInputRef}
-            onChange={handleFileChange}
-          />
+            <label
+              className="p-2 bg-[#007BFF] text-white rounded-md hover:bg-[#0069d9] transition-colors cursor-pointer d-flex items-center justify-center"
+              onClick={handleFileClick}
+              htmlFor="file_input"
+            >
+              <Plus className="h-5 w-5" />
+            </label>
+            <input
+              className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 hidden"
+              id="file_input"
+              type="file"
+              // ref={fileInputRef}
+              onChange={handleFileChange}
+            />
 
-          <button
-            type="submit"
-            className="p-2 bg-[#007BFF] text-white rounded-md hover:bg-[#0069d9] transition-colors"
-            aria-label="Send message"
-          >
-            <Send className="h-5 w-5" />
-          </button>
-        </form>
+            <button
+              type="submit"
+              className="p-2 bg-[#007BFF] text-white rounded-md hover:bg-[#0069d9] transition-colors"
+              aria-label="Send message"
+            >
+              <Send className="h-5 w-5" />
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

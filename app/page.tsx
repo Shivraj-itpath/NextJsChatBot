@@ -5,7 +5,6 @@ import type React from "react";
 import { useRef, useState } from "react";
 import { Header } from "@/components/header";
 import { ChatArea } from "@/components/chat-area";
-import { ChatHistoryDrawer } from "@/components/chat-history-drawer";
 import { SettingsDrawer } from "@/components/settings-drawer";
 import { generateId } from "ai";
 import { getChatResponse } from "./helper/apiHelper";
@@ -16,15 +15,10 @@ export type Conversation = {
   messages: {
     id: string;
     content: string;
-    file?: any;
+    file?: File | null;
     role: "user" | "assistant";
     timestamp: string;
   }[];
-};
-
-export type ImageFile = {
-  imagePreview: string | undefined;
-  file: any;
 };
 
 export default function ChatApp() {
@@ -37,8 +31,9 @@ export default function ChatApp() {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedFile, setSelectedFile] = useState<ImageFile | null>(null);
 
   // Chat conversations state
   const [conversations, setConversations] = useState<Conversation[]>([
@@ -72,20 +67,7 @@ export default function ChatApp() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files?.[0];
-      const reader = new FileReader();
-      let a;
-      reader.onload = (ev) => {
-        a = ev?.target?.result;
-      };
-      reader.readAsDataURL(e.target.files[0]);
-
-      setSelectedFile({
-        imagePreview: a,
-        file,
-      });
-    }
+    setSelectedFile(e.target.files?.[0] || null);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -95,6 +77,7 @@ export default function ChatApp() {
     if (inputText.trim() === "") return;
 
     setInputText("");
+    setSelectedFile(null);
 
     const currentTime = new Date().toLocaleTimeString([], {
       hour: "2-digit",
@@ -111,8 +94,8 @@ export default function ChatApp() {
               {
                 id: generateId(),
                 content: inputText,
-                file: selectedFile?.file ?? null,
                 role: "user",
+                file: selectedFile,
                 timestamp: currentTime,
               },
             ],
@@ -122,7 +105,7 @@ export default function ChatApp() {
       });
     });
 
-    var a = await getChatResponse(inputText, selectedFile?.file);
+    var a = await getChatResponse(inputText, selectedFile);
     setIsLoading(false);
 
     setConversations((prev) => {
@@ -182,14 +165,14 @@ export default function ChatApp() {
 
         <ChatArea
           conversation={currentConversation}
-          fileRef={fileInputRef}
-          selectedFile={selectedFile}
           handleFileClick={handleFileClick}
           handleFileChange={handleFileChange}
           input={inputText}
           handleInputChange={handleInputChange}
           handleSubmit={handleSubmit}
           isLoading={isLoading}
+          selectedFile={selectedFile}
+          setSelectedFile={setSelectedFile}
         />
 
         <SettingsDrawer
