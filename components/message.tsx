@@ -84,7 +84,7 @@ export function Message({ message }: MessageProps) {
           <p className="mb-1">
             {lines ? (
               lines?.map((line, index) => (
-                <span>
+                <span key={index}>
                   {parseBold(line)}
                   {index < lines.length - 1 && <br />}
                 </span>

@@ -2,12 +2,13 @@
 
 import type React from "react";
 
-import { useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { Header } from "@/components/header";
 import { ChatArea } from "@/components/chat-area";
 import { SettingsDrawer } from "@/components/settings-drawer";
 import { generateId } from "ai";
 import { getChatResponse } from "./helper/apiHelper";
+import NewChat from "@/components/new-chat";
 
 export type Conversation = {
   id: string;
@@ -56,7 +57,34 @@ export default function ChatApp() {
     },
   ]);
 
-  const [currentConversationId, setCurrentConversationId] = useState("1");
+  const [currentConversationId, setCurrentConversationId] =
+    useState<string>("");
+
+  useEffect(() => {
+    const savedConversationId = localStorage.getItem("conversationId");
+    if (savedConversationId) {
+      setCurrentConversationId(JSON.parse(savedConversationId));
+    } else {
+      const initialConversationId = generateId();
+      setCurrentConversationId(initialConversationId);
+      localStorage.setItem(
+        "conversationId",
+        JSON.stringify(initialConversationId)
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!currentConversationId) return;
+    setConversations([
+      ...conversations,
+      {
+        id: currentConversationId,
+        title: "Getting started with AI",
+        messages: [],
+      },
+    ]);
+  }, [currentConversationId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(e.target.value);
@@ -105,7 +133,11 @@ export default function ChatApp() {
       });
     });
 
-    var a = await getChatResponse(inputText, selectedFile);
+    var a = await getChatResponse(
+      currentConversationId,
+      inputText,
+      selectedFile
+    );
     setIsLoading(false);
 
     setConversations((prev) => {
@@ -130,9 +162,26 @@ export default function ChatApp() {
     });
   };
 
+  const handleNewChat = () => {
+    let newChatId: string = generateId();
+    setSelectedFile(null);
+    setInputText("");
+    setIsLoading(false);
+    setConversations((prev) => [
+      ...prev,
+      {
+        id: newChatId,
+        title: `Chat ${prev.length + 1}`,
+        messages: [],
+      },
+    ]);
+    setCurrentConversationId(newChatId);
+    localStorage.setItem("conversationId", JSON.stringify(newChatId));
+  };
+
   // Get current conversation
   const currentConversation =
-    conversations.find((conv) => conv.id === currentConversationId) ||
+    conversations?.find((conv) => conv.id === currentConversationId) ||
     conversations[0];
 
   // Toggle functions
@@ -156,6 +205,12 @@ export default function ChatApp() {
       />
 
       <div className="flex flex-1 overflow-hidden relative">
+        <div
+          className="absolute top-5 right-10 bg-[#F5F5F5] z-10"
+          onClick={handleNewChat}
+        >
+          <NewChat />
+        </div>
         {/* <ChatHistoryDrawer
           isOpen={isChatHistoryOpen}
           conversations={conversations}

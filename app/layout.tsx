@@ -3,7 +3,7 @@ import "./globals.css";
 import { rubik } from "@/styles/font";
 
 export const metadata: Metadata = {
-  title: "GenieX",
+  title: "Arlo",
   description: "Created with v0",
   generator: "v0.dev",
 };

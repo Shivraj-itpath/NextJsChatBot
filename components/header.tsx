@@ -24,7 +24,7 @@ export function Header({
         <Menu className="h-5 w-5 text-gray-600" />
       </button>
 
-      <h1 className="text-2xl">GenieX</h1>
+      <h1 className="text-2xl">Arlo</h1>
 
       <div className="relative">
         <button
